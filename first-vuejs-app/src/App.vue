@@ -1,52 +1,46 @@
-<script setup>
-	import HelloWorld from './components/HelloWorld.vue';
-	import {watch, computed, ref} from 'vue';
-
-	// const sentence = computed( () => {
-	// 	return `Salut je m'appelle ${name.value} et j'ai ${age.value} ans.`;
-	// });
-
-	const name = ref('gpeyre');
-	const age = ref(26)
-
-	// const user = ref({
-	// 	name: 'gpeyre',
-	// 	age: 26
-	// });
-
-	// watch(name, (newValue, oldValue) => {
-	// 	console.log(newValue + ' ' + oldValue)
-	// });
-</script>
-
 <template>
-	<!-- <HelloWorld :user="user"/> -->
-	<!-- <HelloWorld>
-		<template v-slot:name> {{ user.name }} </template>
-		<template v-slot:age> {{ user.age }} </template>
-	</HelloWorld> -->
-	<HelloWorld/>
-	<!-- <div class="bold" :class="[ user.age > 18 ? 'text-green' : 'text-red']">{{ user.name }}</div> -->
-	<!-- <span>{{ sentence }}</span> -->
-	<!-- <span>Salut je m'appelle {{user.name}} et j'ai {{user.age}} ans.</span> -->
-	<br>
-	<br>
-	<!-- <input type="text" v-model="name">
-	<input type="text" v-model="age"> -->
+	<div class="container">
+		<div v-if="state === 'error'">
+			<p>Impossible de charger le json</p>
+		</div>
+		<div :aria-busy="state === 'loading'">
+			<Quiz :quiz="quiz" v-if="quiz"/> 
+		</div>
+	</div>
 </template>
 
-<style scoped>
+<script setup>
+import { ref, onMounted } from 'vue';
+import Quiz from './components/Quiz.vue';
 
-	.bold {
-		font-weight: bolder;
-	}
+const quiz = ref (null);
+const state = ref ('loading')
 
-	.text-red {
-		color:indianred;
-	}
+onMounted(() => {
+	fetch('/quiz.json')
+		.then(r => {
+			if (r.ok)
+				return r.json()
+			else
+				throw new Error("Impossible de charger le json");
+		})
+		.then(data => {
+			quiz.value = data
+			state.value = 'idle'
+		})
+		.catch(error => {
+			state.value = 'error'
+		})
+})
+</script>
 
-	.text-green {
-		color:green;
+
+<style>
+
+	.container {
+		margin-top: 2rem;
+		display: flex;
+		justify-content: center;
 	}
 
 </style>
